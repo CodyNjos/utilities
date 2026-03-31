@@ -1,6 +1,6 @@
 # Utilities
 
-A collection of browser-based developer tools built with React + TypeScript + Vite. No servers, no tracking — everything runs in the browser.
+A collection of browser-based developer tools built with React + TypeScript + Vite. No backend, no tracking — everything runs in the browser.
 
 https://tools.njos.dev/
 
