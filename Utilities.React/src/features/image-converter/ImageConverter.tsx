@@ -37,17 +37,6 @@ export default function ImageConverter() {
   const [dimensions, setDimensions] = useState<Dimensions | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const openFilePicker = useCallback(() => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (file) handleFile(file);
-    };
-    input.click();
-  }, [handleFile]);
-
   const reset = () => {
     setImage(null);
     setFileName("");
@@ -80,6 +69,17 @@ export default function ImageConverter() {
     };
     reader.readAsDataURL(file);
   }, []);
+
+  const openFilePicker = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) handleFile(file);
+    };
+    input.click();
+  }, [handleFile]);
 
   const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();

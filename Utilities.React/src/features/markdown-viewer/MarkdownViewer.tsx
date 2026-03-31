@@ -150,17 +150,6 @@ export default function MarkdownViewer() {
   const [showRaw, setShowRaw] = useState(false);
   const [dragging, setDragging] = useState(false);
 
-  const openFilePicker = useCallback(() => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".md,.markdown,.mdown,.mkd,.txt";
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (file) handleFile(file);
-    };
-    input.click();
-  }, [handleFile]);
-
   const handleFile = useCallback((file: File | undefined) => {
     if (!file) return;
     const reader = new FileReader();
@@ -172,6 +161,17 @@ export default function MarkdownViewer() {
     };
     reader.readAsText(file);
   }, []);
+
+  const openFilePicker = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".md,.markdown,.mdown,.mkd,.txt";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) handleFile(file);
+    };
+    input.click();
+  }, [handleFile]);
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {

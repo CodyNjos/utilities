@@ -82,16 +82,6 @@ export default function Base64Tool() {
   const [imgPreview, setImgPreview] = useState<string | null>(null);
   const [copied, setCopied] = useState("");
 
-  const openFilePicker = useCallback(() => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (file) handleFile(file);
-    };
-    input.click();
-  }, [handleFile]);
-
   const clearError = () => setError("");
 
   const clearAll = () => {
@@ -109,6 +99,16 @@ export default function Base64Tool() {
     reader.onload = (e) => setFileData((e.target as FileReader).result as ArrayBuffer);
     reader.readAsArrayBuffer(file);
   }, []);
+
+  const openFilePicker = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) handleFile(file);
+    };
+    input.click();
+  }, [handleFile]);
 
   const clearFile = () => {
     setFileData(null); setFileName(""); setFileMime(""); setFileSize(0);
