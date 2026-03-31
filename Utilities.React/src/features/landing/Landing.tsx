@@ -87,7 +87,7 @@ export default function Landing() {
           👁️👄👁️
         </h1>
         <p style={{ color: "#6a6a72", fontSize: 14, marginTop: 8 }}>
-          Browser-based utilities — no backen, no tracking.
+          Browser-based utilities — no backend, no tracking.
         </p>
       </div>
 
