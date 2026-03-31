@@ -29,6 +29,7 @@ export default function ImageConverter() {
   const [targetFormat, setTargetFormat] = useState("png");
   const [quality, setQuality] = useState(92);
   const [dragging, setDragging] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [converting, setConverting] = useState(false);
   const [converted, setConverted] = useState<string | null>(null);
   const [convertedSize, setConvertedSize] = useState<number | null>(null);
@@ -49,6 +50,7 @@ export default function ImageConverter() {
 
   const handleFile = useCallback((file: File | undefined) => {
     if (!file || !file.type.startsWith("image/")) return;
+    setLoading(true);
     setConverted(null);
     setConvertedSize(null);
     setOriginalSize(file.size);
@@ -62,6 +64,7 @@ export default function ImageConverter() {
       img.onload = () => {
         setDimensions({ w: img.naturalWidth, h: img.naturalHeight });
         setImage(e.target!.result as string);
+        setLoading(false);
       };
       img.src = e.target!.result as string;
     };
@@ -144,6 +147,7 @@ export default function ImageConverter() {
       padding: "32px 24px",
       boxSizing: "border-box",
     }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
       <canvas ref={canvasRef} style={{ display: "none" }} />
 
       <div style={{ maxWidth: 640, margin: "0 auto" }}>
@@ -189,33 +193,48 @@ export default function ImageConverter() {
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
-            onClick={() => fileRef.current?.click()}
+            onClick={() => !loading && fileRef.current?.click()}
             style={{
-              border: `2px dashed ${dragging ? "#f0c040" : "#2a2a30"}`,
+              border: `2px dashed ${loading ? "#f0c040" : dragging ? "#f0c040" : "#2a2a30"}`,
               borderRadius: 16,
               padding: "64px 32px",
               textAlign: "center",
-              cursor: "pointer",
+              cursor: loading ? "default" : "pointer",
               transition: "all 0.3s ease",
-              background: dragging
+              background: loading
                 ? "rgba(240,192,64,0.04)"
-                : "rgba(255,255,255,0.015)",
+                : dragging
+                  ? "rgba(240,192,64,0.04)"
+                  : "rgba(255,255,255,0.015)",
             }}
           >
-            <div style={{
-              fontSize: 48,
-              marginBottom: 16,
-              filter: dragging ? "none" : "grayscale(1)",
-              transition: "filter 0.3s",
-            }}>
-              &#128444;
-            </div>
-            <p style={{ fontSize: 16, fontWeight: 600, margin: "0 0 6px", color: dragging ? "#f0c040" : "#e8e6e1" }}>
-              {dragging ? "Release to upload" : "Drop an image here"}
-            </p>
-            <p style={{ fontSize: 13, color: "#5a5a62", margin: 0 }}>
-              or click to browse &middot; PNG, JPEG, WebP, GIF, BMP, SVG, etc.
-            </p>
+            {loading ? (
+              <>
+                <svg width="48" height="48" viewBox="0 0 24 24" style={{ animation: "spin 1s linear infinite", marginBottom: 16 }}>
+                  <circle cx="12" cy="12" r="10" stroke="#f0c040" strokeWidth="2.5" fill="none" strokeDasharray="31.4 31.4" strokeLinecap="round" />
+                </svg>
+                <p style={{ fontSize: 16, fontWeight: 600, margin: "0 0 6px", color: "#f0c040" }}>
+                  Loading image...
+                </p>
+              </>
+            ) : (
+              <>
+                <div style={{
+                  fontSize: 48,
+                  marginBottom: 16,
+                  filter: dragging ? "none" : "grayscale(1)",
+                  transition: "filter 0.3s",
+                }}>
+                  &#128444;
+                </div>
+                <p style={{ fontSize: 16, fontWeight: 600, margin: "0 0 6px", color: dragging ? "#f0c040" : "#e8e6e1" }}>
+                  {dragging ? "Release to upload" : "Drop an image here"}
+                </p>
+                <p style={{ fontSize: 13, color: "#5a5a62", margin: 0 }}>
+                  or click to browse &middot; PNG, JPEG, WebP, GIF, BMP, SVG, etc.
+                </p>
+              </>
+            )}
             <input
               ref={fileRef}
               type="file"
@@ -420,7 +439,14 @@ export default function ImageConverter() {
                 letterSpacing: "0.02em",
               }}
             >
-              {converting ? "Converting\u2026" : `Convert to ${targetFormat.toUpperCase()}`}
+              {converting ? (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" style={{ animation: "spin 1s linear infinite" }}>
+                    <circle cx="12" cy="12" r="10" stroke="#6a6a72" strokeWidth="3" fill="none" strokeDasharray="31.4 31.4" strokeLinecap="round" />
+                  </svg>
+                  Converting...
+                </span>
+              ) : `Convert to ${targetFormat.toUpperCase()}`}
             </button>
 
             {/* Result */}
