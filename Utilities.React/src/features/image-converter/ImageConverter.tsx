@@ -240,7 +240,11 @@ export default function ImageConverter() {
               type="file"
               accept="image/*"
               style={{ display: "none" }}
-              onChange={(e) => handleFile(e.target.files?.[0])}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                setTimeout(() => handleFile(file), 0);
+              }}
             />
           </div>
         ) : (

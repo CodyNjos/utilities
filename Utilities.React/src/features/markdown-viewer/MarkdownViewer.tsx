@@ -208,7 +208,11 @@ export default function MarkdownViewer() {
             type="file"
             accept=".md,.markdown,.mdown,.mkd,.txt"
             style={{ display: "none" }}
-            onChange={(e) => handleFile(e.target.files?.[0])}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              setTimeout(() => handleFile(file), 0);
+            }}
           />
         </div>
       </div>
@@ -235,7 +239,11 @@ export default function MarkdownViewer() {
             type="file"
             accept=".md,.markdown,.mdown,.mkd,.txt"
             style={{ display: "none" }}
-            onChange={(e) => handleFile(e.target.files?.[0])}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              setTimeout(() => handleFile(file), 0);
+            }}
           />
         </div>
 

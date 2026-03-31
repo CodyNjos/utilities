@@ -296,7 +296,11 @@ export default function Base64Tool() {
                   <div style={{ fontSize: 36, marginBottom: 12, filter: dragging ? "none" : "grayscale(1)", transition: "filter 0.3s" }}>📎</div>
                   <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, color: dragging ? "#6cb4ee" : "#e8e6e1" }}>Drop a file here</p>
                   <p style={{ fontSize: 12, color: "#4a4a52" }}>or click to browse — any file type</p>
-                  <input ref={fileRef} type="file" style={{ display: "none" }} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFile(e.target.files?.[0])} />
+                  <input ref={fileRef} type="file" style={{ display: "none" }} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    setTimeout(() => handleFile(file), 0);
+                  }} />
                 </div>
               ) : (
                 <div style={{ display: "flex", padding: 16, gap: 12, alignItems: "center" }}>
