@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 
 const STYLE: Record<string, React.CSSProperties> = {
   body: {
@@ -81,7 +81,16 @@ export default function Base64Tool() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [imgPreview, setImgPreview] = useState<string | null>(null);
   const [copied, setCopied] = useState("");
-  const fileRef = useRef<HTMLInputElement>(null);
+
+  const openFilePicker = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) handleFile(file);
+    };
+    input.click();
+  }, [handleFile]);
 
   const clearError = () => setError("");
 
@@ -103,7 +112,6 @@ export default function Base64Tool() {
 
   const clearFile = () => {
     setFileData(null); setFileName(""); setFileMime(""); setFileSize(0);
-    if (fileRef.current) fileRef.current.value = "";
   };
 
   const switchMode = (m: "encode" | "decode") => {
@@ -283,7 +291,7 @@ export default function Base64Tool() {
             <>
               {!fileData ? (
                 <div
-                  onClick={() => fileRef.current?.click()}
+                  onClick={() => openFilePicker()}
                   onDragOver={(e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); setDragging(true); }}
                   onDragLeave={() => setDragging(false)}
                   onDrop={(e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
@@ -296,11 +304,6 @@ export default function Base64Tool() {
                   <div style={{ fontSize: 36, marginBottom: 12, filter: dragging ? "none" : "grayscale(1)", transition: "filter 0.3s" }}>📎</div>
                   <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, color: dragging ? "#6cb4ee" : "#e8e6e1" }}>Drop a file here</p>
                   <p style={{ fontSize: 12, color: "#4a4a52" }}>or click to browse — any file type</p>
-                  <input ref={fileRef} type="file" style={{ display: "none" }} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = "";
-                    setTimeout(() => handleFile(file), 0);
-                  }} />
                 </div>
               ) : (
                 <div style={{ display: "flex", padding: 16, gap: 12, alignItems: "center" }}>

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { marked } from "marked";
 import hljs from "highlight.js";
 import "highlight.js/styles/github-dark.css";
@@ -149,7 +149,17 @@ export default function MarkdownViewer() {
   const [fileName, setFileName] = useState("");
   const [showRaw, setShowRaw] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+
+  const openFilePicker = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".md,.markdown,.mdown,.mkd,.txt";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) handleFile(file);
+    };
+    input.click();
+  }, [handleFile]);
 
   const handleFile = useCallback((file: File | undefined) => {
     if (!file) return;
@@ -192,28 +202,17 @@ export default function MarkdownViewer() {
           <p style={styles.subtitle}>Wrangle your markdown into something purdy</p>
           <div
             style={{ ...styles.dropZone, ...(dragging ? styles.dropZoneActive : {}) }}
-            onClick={() => fileRef.current?.click()}
+            onClick={() => openFilePicker()}
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileRef.current?.click(); }}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") openFilePicker(); }}
           >
             <span style={styles.icon}>&#128196;</span>
             Toss your .md file in the corral<br />or click to rustle one up
           </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".md,.markdown,.mdown,.mkd,.txt"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              setTimeout(() => handleFile(file), 0);
-            }}
-          />
         </div>
       </div>
     );
@@ -228,23 +227,12 @@ export default function MarkdownViewer() {
           <button style={styles.toolbarBtn} onClick={() => setShowRaw(!showRaw)}>
             {showRaw ? "Rendered" : "Raw"}
           </button>
-          <button style={styles.toolbarBtn} onClick={() => fileRef.current?.click()}>
+          <button style={styles.toolbarBtn} onClick={() => openFilePicker()}>
             Open
           </button>
           <button style={styles.toolbarBtn} onClick={goBack}>
             Back
           </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".md,.markdown,.mdown,.mkd,.txt"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              setTimeout(() => handleFile(file), 0);
-            }}
-          />
         </div>
 
         {showRaw ? (

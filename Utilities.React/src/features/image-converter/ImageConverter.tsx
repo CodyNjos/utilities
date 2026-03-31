@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 interface Format {
   id: string;
@@ -35,8 +35,18 @@ export default function ImageConverter() {
   const [convertedSize, setConvertedSize] = useState<number | null>(null);
   const [originalSize, setOriginalSize] = useState<number | null>(null);
   const [dimensions, setDimensions] = useState<Dimensions | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const openFilePicker = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) handleFile(file);
+    };
+    input.click();
+  }, [handleFile]);
 
   const reset = () => {
     setImage(null);
@@ -193,7 +203,7 @@ export default function ImageConverter() {
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
-            onClick={() => !loading && fileRef.current?.click()}
+            onClick={() => !loading && openFilePicker()}
             style={{
               border: `2px dashed ${loading ? "#f0c040" : dragging ? "#f0c040" : "#2a2a30"}`,
               borderRadius: 16,
@@ -235,17 +245,6 @@ export default function ImageConverter() {
                 </p>
               </>
             )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                e.target.value = "";
-                setTimeout(() => handleFile(file), 0);
-              }}
-            />
           </div>
         ) : (
           <div style={{
