@@ -1,17 +1,30 @@
-import { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 
-const FONT_LINK = (() => {
-  const link = document.createElement("link");
-  link.href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap";
-  link.rel = "stylesheet";
-  document.head.appendChild(link);
-})();
+interface DiffItem {
+  type: "same" | "add" | "remove";
+  oldLine?: number;
+  newLine?: number;
+  text: string;
+}
 
-function computeDiff(oldText, newText) {
+interface CharDiffResult {
+  commonOld: Set<number>;
+  commonNew: Set<number>;
+}
+
+interface SplitLine {
+  type: "same" | "add" | "remove" | "empty";
+  oldLine?: number;
+  newLine?: number;
+  text?: string;
+  side?: string;
+  idx?: number;
+}
+
+function computeDiff(oldText: string, newText: string): DiffItem[] {
   const oldLines = oldText.split("\n");
   const newLines = newText.split("\n");
 
-  // LCS-based diff
   const m = oldLines.length;
   const n = newLines.length;
   const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
@@ -26,7 +39,7 @@ function computeDiff(oldText, newText) {
     }
   }
 
-  const result = [];
+  const result: DiffItem[] = [];
   let i = m, j = n;
   while (i > 0 || j > 0) {
     if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
@@ -43,13 +56,13 @@ function computeDiff(oldText, newText) {
   return result;
 }
 
-function highlightCharDiff(oldText, newText) {
+function highlightCharDiff(oldText: string, newText: string): CharDiffResult | null {
   const oldChars = [...oldText];
   const newChars = [...newText];
   const m = oldChars.length;
   const n = newChars.length;
 
-  if (m * n > 50000) return null; // skip char diff for very long lines
+  if (m * n > 50000) return null;
 
   const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
   for (let i = 1; i <= m; i++) {
@@ -60,8 +73,8 @@ function highlightCharDiff(oldText, newText) {
     }
   }
 
-  const commonOld = new Set();
-  const commonNew = new Set();
+  const commonOld = new Set<number>();
+  const commonNew = new Set<number>();
   let ci = m, cj = n;
   while (ci > 0 && cj > 0) {
     if (oldChars[ci - 1] === newChars[cj - 1]) {
@@ -96,7 +109,7 @@ greet("World", "Hey");`;
 export default function DiffChecker() {
   const [oldText, setOldText] = useState(SAMPLE_OLD);
   const [newText, setNewText] = useState(SAMPLE_NEW);
-  const [viewMode, setViewMode] = useState("split");
+  const [viewMode, setViewMode] = useState<"split" | "unified">("split");
 
   const diff = useMemo(() => computeDiff(oldText, newText), [oldText, newText]);
 
@@ -111,14 +124,14 @@ export default function DiffChecker() {
   }, [diff]);
 
   const inlineCharDiffs = useMemo(() => {
-    const map = new Map();
+    const map = new Map<number, Set<number>>();
     let i = 0;
     while (i < diff.length) {
       if (diff[i].type === "remove") {
-        let removes = [];
+        let removes: number[] = [];
         let j = i;
         while (j < diff.length && diff[j].type === "remove") { removes.push(j); j++; }
-        let adds = [];
+        let adds: number[] = [];
         while (j < diff.length && diff[j].type === "add") { adds.push(j); j++; }
         for (let k = 0; k < Math.min(removes.length, adds.length); k++) {
           const cd = highlightCharDiff(diff[removes[k]].text, diff[adds[k]].text);
@@ -135,10 +148,10 @@ export default function DiffChecker() {
     return map;
   }, [diff]);
 
-  const renderCharHighlighted = (text, commonSet, type) => {
+  const renderCharHighlighted = (text: string, commonSet: Set<number>, type: string) => {
     if (!commonSet) return <span>{text || " "}</span>;
     const chars = [...text];
-    const spans = [];
+    const spans: React.ReactElement[] = [];
     let buf = "";
     let bufHighlight = false;
 
@@ -173,8 +186,8 @@ export default function DiffChecker() {
   };
 
   const renderSplitView = () => {
-    const leftLines = [];
-    const rightLines = [];
+    const leftLines: SplitLine[] = [];
+    const rightLines: SplitLine[] = [];
     let di = 0;
 
     while (di < diff.length) {
@@ -184,10 +197,10 @@ export default function DiffChecker() {
         rightLines.push({ ...d, side: "right" });
         di++;
       } else if (d.type === "remove") {
-        let removes = [];
+        let removes: DiffItem[] = [];
         let j = di;
         while (j < diff.length && diff[j].type === "remove") { removes.push(diff[j]); j++; }
-        let adds = [];
+        let adds: DiffItem[] = [];
         while (j < diff.length && diff[j].type === "add") { adds.push(diff[j]); j++; }
 
         const maxLen = Math.max(removes.length, adds.length);
@@ -200,7 +213,6 @@ export default function DiffChecker() {
             })()
             : { type: "empty" });
         }
-        // Redo this properly
         leftLines.splice(leftLines.length - maxLen, maxLen);
         rightLines.splice(rightLines.length - maxLen, maxLen);
 
@@ -243,8 +255,8 @@ export default function DiffChecker() {
               </span>
               <span style={{ flex: 1, paddingRight: "8px", whiteSpace: "pre" }}>
                 {line.type === "empty" ? "" :
-                  line.type === "remove" && inlineCharDiffs.has(line.idx)
-                    ? renderCharHighlighted(line.text, inlineCharDiffs.get(line.idx), "remove")
+                  line.type === "remove" && line.idx !== undefined && inlineCharDiffs.has(line.idx)
+                    ? renderCharHighlighted(line.text!, inlineCharDiffs.get(line.idx)!, "remove")
                     : (line.text || " ")}
               </span>
             </div>
@@ -275,8 +287,8 @@ export default function DiffChecker() {
               </span>
               <span style={{ flex: 1, paddingRight: "8px", whiteSpace: "pre" }}>
                 {line.type === "empty" ? "" :
-                  line.type === "add" && inlineCharDiffs.has(line.idx)
-                    ? renderCharHighlighted(line.text, inlineCharDiffs.get(line.idx), "add")
+                  line.type === "add" && line.idx !== undefined && inlineCharDiffs.has(line.idx)
+                    ? renderCharHighlighted(line.text!, inlineCharDiffs.get(line.idx)!, "add")
                     : (line.text || " ")}
               </span>
             </div>
@@ -328,7 +340,7 @@ export default function DiffChecker() {
           </span>
           <span style={{ flex: 1, paddingRight: "8px", whiteSpace: "pre" }}>
             {inlineCharDiffs.has(i)
-              ? renderCharHighlighted(d.text, inlineCharDiffs.get(i), d.type)
+              ? renderCharHighlighted(d.text, inlineCharDiffs.get(i)!, d.type)
               : (d.text || " ")}
           </span>
         </div>
@@ -338,7 +350,6 @@ export default function DiffChecker() {
 
   return (
     <div style={{
-      minHeight: "100vh",
       background: "#0e1117",
       color: "#c9d1d9",
       fontFamily: "'DM Sans', sans-serif",
@@ -383,7 +394,7 @@ export default function DiffChecker() {
             borderRadius: "8px",
             padding: "3px",
           }}>
-            {["split", "unified"].map(mode => (
+            {(["split", "unified"] as const).map(mode => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
