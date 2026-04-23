@@ -4,6 +4,7 @@ import Base64Tool from "./features/base64-tool/Base64Tool";
 import ImageConverter from "./features/image-converter/ImageConverter";
 import DiffChecker from "./features/diff-checker/DiffChecker";
 import MarkdownViewer from "./features/markdown-viewer/MarkdownViewer";
+import CharacterCounter from "./features/character-counter/CharacterCounter";
 
 function BackNav() {
   const location = useLocation();
@@ -48,6 +49,7 @@ function App() {
         <Route path="/image-converter" element={<ImageConverter />} />
         <Route path="/diff-checker" element={<DiffChecker />} />
         <Route path="/markdown" element={<MarkdownViewer />} />
+        <Route path="/character-counter" element={<CharacterCounter />} />
       </Routes>
     </BrowserRouter>
   );

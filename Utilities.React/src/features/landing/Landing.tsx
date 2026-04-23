@@ -37,6 +37,13 @@ const tools: Tool[] = [
     accent: "#58a6ff",
     icon: "🤠",
   },
+  {
+    path: "/character-counter",
+    name: "Character Counter",
+    tagline: "Characters, words, sentences & more",
+    accent: "#c084fc",
+    icon: "¶",
+  },
 ];
 
 export default function Landing() {
