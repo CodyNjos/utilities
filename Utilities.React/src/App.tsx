@@ -5,6 +5,7 @@ import ImageConverter from "./features/image-converter/ImageConverter";
 import DiffChecker from "./features/diff-checker/DiffChecker";
 import MarkdownViewer from "./features/markdown-viewer/MarkdownViewer";
 import CharacterCounter from "./features/character-counter/CharacterCounter";
+import BggSync from "./features/bgg-sync/BggSync";
 
 function BackNav() {
   const location = useLocation();
@@ -50,6 +51,7 @@ function App() {
         <Route path="/diff-checker" element={<DiffChecker />} />
         <Route path="/markdown" element={<MarkdownViewer />} />
         <Route path="/character-counter" element={<CharacterCounter />} />
+        <Route path="/bgg-sync" element={<BggSync />} />
       </Routes>
     </BrowserRouter>
   );

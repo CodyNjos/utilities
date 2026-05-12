@@ -44,6 +44,13 @@ const tools: Tool[] = [
     accent: "#c084fc",
     icon: "¶",
   },
+  {
+    path: "/bgg-sync",
+    name: "BGG Sync",
+    tagline: "Sync BGG XML to collection.json",
+    accent: "#e2a83e",
+    icon: "🎲",
+  },
 ];
 
 export default function Landing() {
