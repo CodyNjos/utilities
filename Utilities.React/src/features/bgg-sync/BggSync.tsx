@@ -476,73 +476,25 @@ export default function BggSync() {
                         </span>
                       </div>
                       {expanded.has(i) && (
-                        <div
+                        <pre
                           style={{
-                            display: "flex",
-                            gap: 16,
+                            ...S.mono,
+                            margin: 0,
                             padding: "12px 16px 16px 40px",
                             borderBottom:
                               i < diff.length - 1
                                 ? "1px solid #1a1a1e"
                                 : "none",
                             background: "#0d0d10",
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                            overflowX: "auto",
+                            whiteSpace: "pre",
+                            color: "#b0b0b8",
                           }}
                         >
-                          <img
-                            src={d.game.thumbnail}
-                            alt={d.game.name}
-                            style={{
-                              width: 80,
-                              height: 80,
-                              objectFit: "contain",
-                              borderRadius: 8,
-                              background: "#111",
-                              flexShrink: 0,
-                            }}
-                          />
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: "auto 1fr",
-                              gap: "4px 12px",
-                              fontSize: 12,
-                              alignContent: "start",
-                            }}
-                          >
-                            <span style={{ color: "#5a5a62" }}>Year</span>
-                            <span>{d.game.yearPublished}</span>
-                            <span style={{ color: "#5a5a62" }}>Status</span>
-                            <span>
-                              {d.game.owned
-                                ? "Owned"
-                                : d.game.wishlist
-                                ? "Wishlist"
-                                : "—"}
-                            </span>
-                            <span style={{ color: "#5a5a62" }}>Players</span>
-                            <span>{d.game.players || "—"}</span>
-                            <span style={{ color: "#5a5a62" }}>Play Time</span>
-                            <span>
-                              {d.game.playTime
-                                ? `${d.game.playTime} min`
-                                : "—"}
-                            </span>
-                            <span style={{ color: "#5a5a62" }}>Plays</span>
-                            <span>{d.game.numPlays}</span>
-                            {d.game.onLoan && (
-                              <>
-                                <span style={{ color: "#5a5a62" }}>
-                                  On Loan
-                                </span>
-                                <span style={{ color: "#d35400" }}>
-                                  {d.game.loanNote || "Yes"}
-                                </span>
-                              </>
-                            )}
-                            <span style={{ color: "#5a5a62" }}>BGG ID</span>
-                            <span style={S.mono}>{d.game.objectId}</span>
-                          </div>
-                        </div>
+                          {JSON.stringify(d.game, null, 2)}
+                        </pre>
                       )}
                     </div>
                   ))}
