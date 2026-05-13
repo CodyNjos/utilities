@@ -19,6 +19,7 @@ interface DiffEntry {
   type: "added" | "updated" | "removed";
   name: string;
   details: string;
+  game: BoardGame;
 }
 
 const ACCENT = "#e2a83e";
@@ -169,12 +170,14 @@ function runSync(
     const cur = existing.get(bgg.objectId);
 
     if (!cur) {
+      const newGame = { ...bgg, onLoan: false };
       diff.push({
         type: "added",
         name: bgg.name,
         details: bgg.owned ? "owned" : "wishlist",
+        game: newGame,
       });
-      result.push({ ...bgg, onLoan: false });
+      result.push(newGame);
     } else {
       const merged = { ...cur };
       const changes: string[] = [];
@@ -212,6 +215,7 @@ function runSync(
           type: "updated",
           name: bgg.name,
           details: changes.join(", "),
+          game: merged,
         });
       }
 
@@ -225,6 +229,7 @@ function runSync(
       type: "removed",
       name: g.name,
       details: "in JSON but not in BGG (kept)",
+      game: g,
     });
     result.push(g);
   }
@@ -239,6 +244,16 @@ export default function BggSync() {
   const [output, setOutput] = useState<BoardGame[] | null>(null);
   const [bggCount, setBggCount] = useState(0);
   const [jsonCount, setJsonCount] = useState(0);
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+
+  const toggleExpanded = (i: number) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  };
 
   const handleFile = useCallback(
     (setter: (v: string) => void) =>
@@ -405,37 +420,130 @@ export default function BggSync() {
               ) : (
                 <div style={{ padding: "8px 0" }}>
                   {diff.map((d, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: "flex",
-                        alignItems: "baseline",
-                        gap: 10,
-                        padding: "8px 16px",
-                        borderBottom:
-                          i < diff.length - 1
-                            ? "1px solid #1a1a1e"
-                            : "none",
-                        fontSize: 13,
-                      }}
-                    >
-                      <span
+                    <div key={i}>
+                      <div
+                        onClick={() => toggleExpanded(i)}
                         style={{
-                          ...S.mono,
-                          color: colors[d.type],
-                          fontWeight: 700,
-                          fontSize: 14,
-                          width: 14,
-                          textAlign: "center",
-                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "10px 16px",
+                          borderBottom:
+                            !expanded.has(i) && i < diff.length - 1
+                              ? "1px solid #1a1a1e"
+                              : "none",
+                          fontSize: 13,
+                          cursor: "pointer",
+                          userSelect: "none",
                         }}
                       >
-                        {icons[d.type]}
-                      </span>
-                      <span style={{ fontWeight: 500 }}>{d.name}</span>
-                      <span style={{ ...S.mono, color: "#5a5a62", fontSize: 11 }}>
-                        {d.details}
-                      </span>
+                        <span
+                          style={{
+                            ...S.mono,
+                            color: colors[d.type],
+                            fontWeight: 700,
+                            fontSize: 14,
+                            width: 14,
+                            textAlign: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {icons[d.type]}
+                        </span>
+                        <span style={{ fontWeight: 500, flex: 1 }}>
+                          {d.name}
+                        </span>
+                        <span
+                          style={{
+                            ...S.mono,
+                            color: "#5a5a62",
+                            fontSize: 11,
+                          }}
+                        >
+                          {d.details}
+                        </span>
+                        <span
+                          style={{
+                            color: "#4a4a52",
+                            fontSize: 10,
+                            transition: "transform 0.2s",
+                            transform: expanded.has(i)
+                              ? "rotate(90deg)"
+                              : "rotate(0deg)",
+                          }}
+                        >
+                          ▶
+                        </span>
+                      </div>
+                      {expanded.has(i) && (
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 16,
+                            padding: "12px 16px 16px 40px",
+                            borderBottom:
+                              i < diff.length - 1
+                                ? "1px solid #1a1a1e"
+                                : "none",
+                            background: "#0d0d10",
+                          }}
+                        >
+                          <img
+                            src={d.game.thumbnail}
+                            alt={d.game.name}
+                            style={{
+                              width: 80,
+                              height: 80,
+                              objectFit: "contain",
+                              borderRadius: 8,
+                              background: "#111",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "auto 1fr",
+                              gap: "4px 12px",
+                              fontSize: 12,
+                              alignContent: "start",
+                            }}
+                          >
+                            <span style={{ color: "#5a5a62" }}>Year</span>
+                            <span>{d.game.yearPublished}</span>
+                            <span style={{ color: "#5a5a62" }}>Status</span>
+                            <span>
+                              {d.game.owned
+                                ? "Owned"
+                                : d.game.wishlist
+                                ? "Wishlist"
+                                : "—"}
+                            </span>
+                            <span style={{ color: "#5a5a62" }}>Players</span>
+                            <span>{d.game.players || "—"}</span>
+                            <span style={{ color: "#5a5a62" }}>Play Time</span>
+                            <span>
+                              {d.game.playTime
+                                ? `${d.game.playTime} min`
+                                : "—"}
+                            </span>
+                            <span style={{ color: "#5a5a62" }}>Plays</span>
+                            <span>{d.game.numPlays}</span>
+                            {d.game.onLoan && (
+                              <>
+                                <span style={{ color: "#5a5a62" }}>
+                                  On Loan
+                                </span>
+                                <span style={{ color: "#d35400" }}>
+                                  {d.game.loanNote || "Yes"}
+                                </span>
+                              </>
+                            )}
+                            <span style={{ color: "#5a5a62" }}>BGG ID</span>
+                            <span style={S.mono}>{d.game.objectId}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
