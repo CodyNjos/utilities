@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import Landing from "./features/landing/Landing";
 import Base64Tool from "./features/base64-tool/Base64Tool";
 import ImageConverter from "./features/image-converter/ImageConverter";
@@ -53,6 +54,7 @@ function App() {
         <Route path="/character-counter" element={<CharacterCounter />} />
         <Route path="/bgg-sync" element={<BggSync />} />
       </Routes>
+      <Analytics />
     </BrowserRouter>
   );
 }
